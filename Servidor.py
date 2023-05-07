@@ -135,24 +135,37 @@ def Juego(Client_conn):
         else:
             Client_conn.sendall(b"Ingrese una coordenada valida:")
 
+"""Acepta conexiones entrantes de clientes y crea un nuevo hilo para cada conexión.
+   Además, gestiona la lista de conexiones activas utilizando la función gestion_conexiones."""
 def servirPorSiempre(socketTcp, listaconexiones):
     try:
         while True:
             client_conn, client_addr = socketTcp.accept()
             print("Conectado a", client_addr)
+            #Se agrega el objeto de conexión a la lista de conexiones listaconexiones.
             listaconexiones.append(client_conn)
+            #Se crea un nuevo hilo para cada conexión aceptada, que llamará a la función recibir_datos
             thread_read = threading.Thread(target=recibir_datos, args=[client_conn, client_addr])
+            #El hilo se inicia con el método start().
             thread_read.start()
+            #Se llama a la función gestion_conexiones para gestionar las conexiones activas.
             gestion_conexiones(listaConexiones)
     except Exception as e:
         print(e)
 
+"""Se encarga de eliminar las conexiones que ya no están activas y de imprimir información sobre
+   el estado del servidor, como el número de hilos activos y la lista de conexiones activas."""
 def gestion_conexiones(listaconexiones):
+    """Se itera sobre cada conexión de la lista de conexiones listaconexiones si el método fileno()
+       del objeto de conexión devuelve -1, se elimina la conexión de la lista utilizando remove()"""
     for conn in listaconexiones:
         if conn.fileno() == -1:
             listaconexiones.remove(conn)
+    #threading.active_count() devuelve el número de hilos activos en el servidor.
     print("hilos activos:", threading.active_count())
+    #threading.enumerate() devuelve una lista de todos los hilos en ejecución.
     print("enum", threading.enumerate())
+    #len(listaconexiones) devuelve la cantidad de conexiones activas en la lista.
     print("conexiones: ", len(listaconexiones))
     print(listaconexiones)
 
